@@ -13,8 +13,9 @@ public class Index2D implements Pixel2D {
         this._y = h; //this. means get the h and turn it inro my Y only for me- the user sets h and for me it will be y
     }
     public Index2D(Pixel2D other) {
-        this._x = this.getX(); //open a window for the user to see my _x
-        this._y = this.getY(); //open a window for the user to see my _y
+        this._x = other.getX(); //take the objects x and put in mine
+        this._y = other.getY(); //take the objects y and put in mine
+
     }
     @Override
     public int getX() {
@@ -33,14 +34,14 @@ public class Index2D implements Pixel2D {
      */
     @Override
     public double distance2D(Pixel2D p2) {
-     int len1 = this._x - this.getX();
-     int len2 = this._y - this.getY();
+     double len1 = this._x - p2.getX() ;
+     double len2 = this._y - p2.getY() ;
         return Math.sqrt((len1 *len1) + (len2 *len2));
     }
 
     @Override
     public String toString() {
-        return "("+ this.getX() +"," + this.getY() +")";
+        return "("+ _x +"," + _y +")";
     }
 
     @Override
