@@ -10,11 +10,11 @@ package assignments.Ex2;
  */
 public class StdDrawTest {
 	public static void main(String[] a) {
-//		testSimpleGUI();
+		testSimpleGUI();
 		testClip();
-//		testDrawGraphs();
-//		int[][] mat = {{1,1,1,1,1}, {1,0,1,0,1}, {1,0,0,0,1},  {1,0,1,0,1},  {1,1,1,1,1}, {1,0,1,0,1}};
-//		drawMat(mat);
+		testDrawGraphs();
+		int[][] mat = {{1,1,1,1,1}, {1,0,1,0,1}, {1,0,0,0,1},  {1,0,1,0,1},  {1,1,1,1,1}, {1,0,1,0,1}};
+		drawMat(mat);
 
 	}
 
