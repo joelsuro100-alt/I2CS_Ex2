@@ -47,7 +47,7 @@ public class Index2D implements Pixel2D {
     @Override
     public boolean equals(Object p) {
         if (p==null || !(p instanceof Pixel2D)) {return false;} //check if p is null or not a type
-        Pixel2D t = (Pixel2D) p;
-        return (this.getX()==t.getX() && this.getY()==t.getY());
+        Pixel2D t = (Pixel2D) p; //add a temp subject that is the type of Pixsel2D
+        return (this.getX()==t.getX() && this.getY()==t.getY()); //check that my x and the object p are ==
     }
 }
