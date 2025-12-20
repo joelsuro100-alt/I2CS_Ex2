@@ -8,7 +8,6 @@ import java.io.Serializable;
  *
  */
 public class Map implements Map2D, Serializable{
-
     // edit this class below
 	/**
 	 * Constructs a w*h 2D raster map with an init value v.
@@ -16,13 +15,13 @@ public class Map implements Map2D, Serializable{
 	 * @param h
 	 * @param v
 	 */
+        private int[][] _map;
 	public Map(int w, int h, int v) {init(w, h, v);}
-	/**
-	 * Constructs a square map (size*size).
-	 * @param size
-	 */
+        /**
+         * Constructs a square map (size*size).
+         * @param size
+         */
 	public Map(int size) {this(size,size, 0);}
-	
 	/**
 	 * Constructs a map from a given 2D array.
 	 * @param data
@@ -32,8 +31,15 @@ public class Map implements Map2D, Serializable{
 	}
 	@Override
 	public void init(int w, int h, int v) {
+        this._map = new int[w][h];
+        if ( w = null || h = null)
+        {
+            throw new RuntimeException("inserted empty map length");
 
-	}
+        }
+
+        }
+
 	@Override
 	public void init(int[][] arr) {
 
