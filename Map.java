@@ -8,7 +8,8 @@ import java.io.Serializable;
  *
  */
 public class Map implements Map2D, Serializable{
-    // edit this class below
+    //TODO
+
 	/**
 	 * Constructs a w*h 2D raster map with an init value v.
 	 * @param w
@@ -31,14 +32,13 @@ public class Map implements Map2D, Serializable{
 	}
 	@Override
 	public void init(int w, int h, int v) {
-        this._map = new int[w][h];
-        if ( w = null || h = null)
-        {
-            throw new RuntimeException("inserted empty map length");
-
+        this._map = new int[w][h]; //create the double array with the w&h
+        for (int x = 0; x < w; x++) {          //go over the width
+            for (int y = 0; y < h; y++) {      //go over the height
+                this._map[x][y] = v;           //put the V inside the double array
+            }
         }
-
-        }
+    }
 
 	@Override
 	public void init(int[][] arr) {
@@ -52,27 +52,21 @@ public class Map implements Map2D, Serializable{
 	}
 	@Override
 	public int getWidth() {
-        int ans = -1;
-
-        return ans;
+        return this._map.length;
     }
 	@Override
 	public int getHeight() {
-        int ans = -1;
-
-        return ans;
+        return this._map[0].length; //whats the leng in index 0(will be the same for all of them
     }
 	@Override
 	public int getPixel(int x, int y) {
-        int ans = -1;
-
-        return ans;
+        return this._map[x][y];
     }
 	@Override
 	public int getPixel(Pixel2D p) {
-        int ans = -1;
-
-        return ans;
+        int x = p.getX(); //get the x cord
+        int y = p.getY(); //get the y cord
+        return this._map[x][y]; //go to the map with the x&y extracted
 	}
 	@Override
 	public void setPixel(int x, int y, int v) {
@@ -85,9 +79,11 @@ public class Map implements Map2D, Serializable{
 
     @Override
     public boolean isInside(Pixel2D p) {
-        boolean ans = true;
-
-        return ans;
+        int x = p.getX();
+        int y = p.getY();
+        if (x < 0 || x >= (this.getWidth())){return false;} ;
+        if (y < 0 || y >= (this.getHeight())){return false;} ;
+            return true;
     }
 
     @Override
