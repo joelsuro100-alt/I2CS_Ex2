@@ -33,16 +33,23 @@ public class Map implements Map2D, Serializable{
 	@Override
 	public void init(int w, int h, int v) {
         this._map = new int[w][h]; //create the double array with the w&h
-        for (int x = 0; x < w; x++) {          //go over the width
-            for (int y = 0; y < h; y++) {      //go over the height
-                this._map[x][y] = v;           //put the V inside the double array
+        for (int x = 0; x < w; x++) { //go over the width
+            for (int y = 0; y < h; y++) { //go over the height
+                this._map[x][y] = v; //put the V inside the double array
             }
         }
     }
 
 	@Override
 	public void init(int[][] arr) {
-
+    if (arr == null || arr.length == 0){ //check if the array is null
+        throw new RuntimeException();}
+        int w = arr.length; //take our w&h from the array we got
+        int h = arr[0].length;
+        this._map = new int[w][h]; //create oir new array
+        for (int x = 0; x < w; x++) //deep copy for the new array
+            for (int y = 0; y <h; y++)
+                this._map[x][y] = _map[x][y];
 	}
 	@Override
 	public int[][] getMap() {
@@ -68,13 +75,17 @@ public class Map implements Map2D, Serializable{
         int y = p.getY(); //get the y cord
         return this._map[x][y]; //go to the map with the x&y extracted
 	}
-	@Override
-	public void setPixel(int x, int y, int v) {
-
+    @Override
+    public void setPixel(int x, int y, int v) {
+        if (x >= 0 && x < this.getWidth() && y >= 0 && y < this.getHeight()) {
+            this._map[x][y] = v;
+        }
     }
-	@Override
+    @Override
 	public void setPixel(Pixel2D p, int v) {
-
+    if (isInside(p)){
+        this.setPixel(p.getX(), p.getY(), v);
+        }
 	}
 
     @Override
