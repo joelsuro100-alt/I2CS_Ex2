@@ -131,6 +131,12 @@ public class Map implements Map2D, Serializable{
 
     @Override
     public void drawRect(Pixel2D p1, Pixel2D p2, int color) {
+        // שלב 1: מציאת הגבולות
+        // משתמשים ב-Math.min כדי למצוא את ההתחלה, וב-Math.max כדי למצוא את הסוף
+        int xmin = Math.min(p1.getX(), p2.getX()); //find the min x point
+        int xmax   = Math.max(p1.getX(), p2.getX()); //find the max x point
+        int ymin = Math.min(p1.getY(), p2.getY()); //find the min x point -the down left corner
+        int ymax   = Math.max(p1.getY(), p2.getY()); //find the max x point -the upper right corner
 
         // שלב 2: לולאה כפולה על כל התחום
         for (int x = xmin; x <= xmax; x++) {
