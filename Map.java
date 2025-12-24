@@ -132,6 +132,14 @@ public class Map implements Map2D, Serializable{
     @Override
     public void drawRect(Pixel2D p1, Pixel2D p2, int color) {
 
+        // שלב 2: לולאה כפולה על כל התחום
+        for (int x = xmin; x <= xmax; x++) {
+            for (int y = ymin; y <= ____; y++) {
+                // שלב 3: צביעת הפיקסל
+                // קרא לפונקציה setPixel עם הקואורדינטות והצבע
+                this.setPixel(_________);
+            }
+        }
     }
 
     @Override
