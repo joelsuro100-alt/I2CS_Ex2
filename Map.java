@@ -1,5 +1,7 @@
 package assignments.Ex2;
 import java.io.Serializable;
+import java.util.ArrayList;
+
 /**
  * This class represents a 2D map (int[w][h]) as a "screen" or a raster matrix or maze over integers.
  * This is the main class needed to be implemented.
@@ -93,7 +95,6 @@ public class Map implements Map2D, Serializable{
         this.setPixel(p.getX(), p.getY(), v);
         }
 	}
-
     @Override
     public boolean isInside(Pixel2D p) {
         int x = p.getX();
@@ -102,19 +103,21 @@ public class Map implements Map2D, Serializable{
         if (y < 0 || y >= (this.getHeight())){return false;} ;
             return true;
     }
-
     @Override
     public boolean sameDimensions(Map2D p) {
-        boolean ans = false;
-
-        return ans;
+        return this.getWidth() == p.getWidth() && this.getHeight() == p.getHeight();
     }
-
     @Override
     public void addMap2D(Map2D p) {
-
+        if (sameDimensions(p)){ //check that there the same dim
+            for (int x = 0; x < getWidth(); x++) {
+                for (int y = 0; y < getHeight(); y++) {
+                    int valaue = this.getPixel(x, y) + p.getPixel(x, y); //take the existing x&y add to second map
+                    this.setPixel(x, y, valaue);
+                }
+            }
+        }
     }
-
     @Override
     public void mul(double scalar) {
 
@@ -127,21 +130,20 @@ public class Map implements Map2D, Serializable{
 
     @Override
     public void drawCircle(Pixel2D center, double rad, int color) {
-    int centerX = center.getX(); //take the center point x&y value
-    int centerY = center.getY();
-    int r = (int) rad;
-
-    int rec_startX = centerX - r; //the bottom left X of the rec outside the circle
-    int rec_startY = centerY - r; //the bottom left Y of the rec outside the circle
-    int rec_endX = centerX + r; //the top right X of the rec outside the circle
-    int rec_endY = centerY + r; //the top right X of the rec outside the circle
-        for (int x = rec_startX; x <= rec_endX; x++) { //go over all the rec
-            for (int y = rec_startY; y <= rec_endY; y++) {
-                double dx = x - centerX;
-                double dy = y - centerY;
-                double distance = Math.sqrt(dx * dx + dy * dy); //go over only the x,y that are in the dis of the circle
-                if (distance < rad) { //color only the pixsel that are inside the map & the circle
-                    this.setPixel(x, y, color);
+        int centerX = center.getX(); //take the center point x&y value
+        int centerY = center.getY();
+        int r = (int) rad;
+        int rec_startX = centerX - r; //the bottom left X of the rec outside the circle
+        int rec_startY = centerY - r; //the bottom left Y of the rec outside the circle
+        int rec_endX = centerX + r; //the top right X of the rec outside the circle
+        int rec_endY = centerY + r; //the top right X of the rec outside the circle
+            for (int x = rec_startX; x <= rec_endX; x++) { //go over all the rec
+                for (int y = rec_startY; y <= rec_endY; y++) {
+                    double dx = x - centerX;
+                    double dy = y - centerY;
+                    double distance = Math.sqrt(dx * dx + dy * dy); //go over only the x,y that are in the dis of the circle
+                        if (distance < rad) { //color only the pixsel that are inside the map & the circle
+                            this.setPixel(x, y, color);
                 }
             }
         }
@@ -149,8 +151,35 @@ public class Map implements Map2D, Serializable{
 
     @Override
     public void drawLine(Pixel2D p1, Pixel2D p2, int color) {
+        int x1 = p1.getX(); //the begging x&y
+        int y1 = p1.getY();
+        int x2 = p2.getX(); //the end x&y
+        int y2 = p2.getY();
 
+        if (x1 == x2 && y1 == y2) { //check if the points are equal
+            this.setPixel(x1, y1, color);
+            return;
+        }
+        int dx = Math.abs(x2 - x1); //calcs the distance between x
+        int dy = Math.abs(y2 - y1); //calcs the y distance between y
+        if (dx >= dy) { //if the dis from x >= than dis y
+            int startX = Math.min(x1, x2); //start from the smallest x to largest
+            int endX   = Math.max(x1, x2);
+            for (int x = startX; x <= endX; x++) {//calc the y with the formula: Y = Y1 + Slope * (currentX - X1)
+                double y = y1 + ((double)(y2 - y1) / (x2 - x1)) * (x - x1);
+                this.setPixel(x, (int)Math.round(y), color); //casting to int
+            }
+        }
+        else { //if the dis y > dis x
+            int startY = Math.min(y1, y2); //start from the smallest y to largest
+            int endY   = Math.max(y1, y2);
+            for (int y = startY; y <= endY; y++) { //calc the ס with the formula: X = X1 + (1/Slope) * (currentY - Y1)
+                double x = x1 + ((double)(x2 - x1) / (y2 - y1)) * (y - y1);
+                this.setPixel((int)Math.round(x), y, color); //casting to int
+            }
+        }
     }
+
 
     @Override
     public void drawRect(Pixel2D p1, Pixel2D p2, int color) {
@@ -175,12 +204,36 @@ public class Map implements Map2D, Serializable{
 	@Override
 	/** 
 	 * Fills this map with the new color (new_v) starting from p.
+     * I asked chatgpt to help me write fill with an arraylist and it suggested with Uses of BFS/DFS iterative approach.
 	 * https://en.wikipedia.org/wiki/Flood_fill
 	 */
 	public int fill(Pixel2D xy, int new_v,  boolean cyclic) {
-		int ans = -1;
-
-		return ans;
+        int targetColor = this.getPixel(xy); //keep origing color to know what to replace
+        if (targetColor == new_v) return 0; //check if the color is the same as the old then nothing to do
+        ArrayList<Pixel2D> todoList = new java.util.ArrayList<>(); //create a todolist &counter
+        todoList.add(xy);
+        this.setPixel(xy, new_v); // color the first one
+        int count = 1;
+        int[] dx = {1, -1, 0, 0}; //arrays that will help find the neighbors of the target
+        int[] dy = {0, 0, 1, -1};
+        while (!todoList.isEmpty()) { //Main loop as long as there are tasks in the list
+            Pixel2D current = todoList.remove(todoList.size() - 1); //take the last pixsel that we put in
+            for (int i = 0; i < 4; i++) { //go over its neighbors with the arrays that we made
+                int nextX = current.getX() + dx[i];
+                int nextY = current.getY() + dy[i];
+                if (cyclic) { //use of world cycle
+                    nextX = (nextX + this.getWidth()) % this.getWidth(); //we take care of negative number outcome
+                    nextY = (nextY + this.getHeight()) % this.getHeight();
+                }
+                Pixel2D neighbor = new Index2D(nextX, nextY); // create a new point
+                if (isInside(neighbor) && getPixel(neighbor) == targetColor) { //check if the nighbor is inside the map and orofing color
+                    this.setPixel(neighbor, new_v); // color so it won't be adding twice
+                    todoList.add(neighbor);         // add todolist
+                    count++;                        // update counter
+                }
+            }
+        }
+        return count;
 	}
 
 	@Override
