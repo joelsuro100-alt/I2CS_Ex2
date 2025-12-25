@@ -135,12 +135,12 @@ public class Map implements Map2D, Serializable{
     int rec_startY = centerY - r; //the bottom left Y of the rec outside the circle
     int rec_endX = centerX + r; //the top right X of the rec outside the circle
     int rec_endY = centerY + r; //the top right X of the rec outside the circle
-        for (int x = rec_startX; x <= rec_endX; x++) { //go ovel all the rec
+        for (int x = rec_startX; x <= rec_endX; x++) { //go over all the rec
             for (int y = rec_startY; y <= rec_endY; y++) {
                 double dx = x - centerX;
                 double dy = y - centerY;
-                double distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < rad) {
+                double distance = Math.sqrt(dx * dx + dy * dy); //go over only the x,y that are in the dis of the circle
+                if (distance < rad) { //color only the pixsel that are inside the map & the circle
                     this.setPixel(x, y, color);
                 }
             }
