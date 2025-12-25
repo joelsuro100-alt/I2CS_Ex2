@@ -49,19 +49,25 @@ public class Map implements Map2D, Serializable{
         this._map = new int[w][h]; //create oir new array
         for (int x = 0; x < w; x++) //deep copy for the new array
             for (int y = 0; y <h; y++)
-                this._map[x][y] = _map[x][y];
+                this._map[x][y] = arr[x][y];
 	}
-	@Override
+    @Override
 	public int[][] getMap() {
-		int[][] ans = null;
+        int w = this.getWidth();
+        int h = this.getHeight();
+        int[][] ans = new int[w][h];
 
-		return ans;
-	}
-	@Override
-	public int getWidth() {
+        for (int x = 0; x < w; x++) //deep copy for the new array
+            for (int y = 0; y <h; y++)
+                ans[x][y] = this._map[x][y];
+        return ans;
+    }
+
+    @Override
+    public int getWidth() {
         return this._map.length;
     }
-	@Override
+    @Override
 	public int getHeight() {
         return this._map[0].length; //whats the leng in index 0(will be the same for all of them
     }
@@ -121,7 +127,24 @@ public class Map implements Map2D, Serializable{
 
     @Override
     public void drawCircle(Pixel2D center, double rad, int color) {
+    int centerX = center.getX(); //take the center point x&y value
+    int centerY = center.getY();
+    int r = (int) rad;
 
+    int rec_startX = centerX - r; //the bottom left X of the rec outside the circle
+    int rec_startY = centerY - r; //the bottom left Y of the rec outside the circle
+    int rec_endX = centerX + r; //the top right X of the rec outside the circle
+    int rec_endY = centerY + r; //the top right X of the rec outside the circle
+        for (int x = rec_startX; x <= rec_endX; x++) { //go ovel all the rec
+            for (int y = rec_startY; y <= rec_endY; y++) {
+                double dx = x - centerX;
+                double dy = y - centerY;
+                double distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < rad) {
+                    this.setPixel(x, y, color);
+                }
+            }
+        }
     }
 
     @Override
@@ -131,19 +154,14 @@ public class Map implements Map2D, Serializable{
 
     @Override
     public void drawRect(Pixel2D p1, Pixel2D p2, int color) {
-        // שלב 1: מציאת הגבולות
-        // משתמשים ב-Math.min כדי למצוא את ההתחלה, וב-Math.max כדי למצוא את הסוף
         int xmin = Math.min(p1.getX(), p2.getX()); //find the min x point
         int xmax   = Math.max(p1.getX(), p2.getX()); //find the max x point
         int ymin = Math.min(p1.getY(), p2.getY()); //find the min x point -the down left corner
         int ymax   = Math.max(p1.getY(), p2.getY()); //find the max x point -the upper right corner
 
-        // שלב 2: לולאה כפולה על כל התחום
-        for (int x = xmin; x <= xmax; x++) {
-            for (int y = ymin; y <= ____; y++) {
-                // שלב 3: צביעת הפיקסל
-                // קרא לפונקציה setPixel עם הקואורדינטות והצבע
-                this.setPixel(_________);
+        for (int x = xmin; x <= xmax; x++) { //double loop for the hole area
+            for (int y = ymin; y <= ymax; y++) {
+                this.setPixel(x, y, color); //color each pixel with setPixesl function
             }
         }
     }
