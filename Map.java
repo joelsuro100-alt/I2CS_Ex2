@@ -173,14 +173,12 @@ public class Map implements Map2D, Serializable{
         else { //if the dis y > dis x
             int startY = Math.min(y1, y2); //start from the smallest y to largest
             int endY   = Math.max(y1, y2);
-            for (int y = startY; y <= endY; y++) { //calc the ס with the formula: X = X1 + (1/Slope) * (currentY - Y1)
+            for (int y = startY; y <= endY; y++) { //calc the x with the formula: X = X1 + (1/Slope) * (currentY - Y1)
                 double x = x1 + ((double)(x2 - x1) / (y2 - y1)) * (y - y1);
                 this.setPixel((int)Math.round(x), y, color); //casting to int
             }
         }
     }
-
-
     @Override
     public void drawRect(Pixel2D p1, Pixel2D p2, int color) {
         int xmin = Math.min(p1.getX(), p2.getX()); //find the min x point
@@ -194,21 +192,28 @@ public class Map implements Map2D, Serializable{
             }
         }
     }
-
     @Override
     public boolean equals(Object ob) {
-        boolean ans = false;
-
-        return ans;
+        if (!(ob instanceof Map2D)){return false;} //check if its even has the properties of map
+        Map2D other = (Map2D) ob; //convert to map(object can be anything)
+        if (!sameDimensions(other)) { return false; } //check if after converting its equal
+        for (int x = 0; x < getWidth(); x++) { //we check that all the pixels are equal
+            for (int y = 0; y < getHeight(); y++) {
+                if (this.getPixel(x, y) != other.getPixel(x, y)) {
+                    return false; //we found 1 pixel not equal
+                }
+            }
+        }
+        return true; //if in the end it's all equal.
     }
 	@Override
 	/** 
 	 * Fills this map with the new color (new_v) starting from p.
-     * I asked chatgpt to help me write fill with an arraylist and it suggested with Uses of BFS/DFS iterative approach.
+     * I asked chatgpt to help me write fill with an arraylist, and it suggested with Uses of BFS/DFS iterative approach.
 	 * https://en.wikipedia.org/wiki/Flood_fill
 	 */
 	public int fill(Pixel2D xy, int new_v,  boolean cyclic) {
-        int targetColor = this.getPixel(xy); //keep origing color to know what to replace
+        int targetColor = this.getPixel(xy); //keep origin color to know what to replace
         if (targetColor == new_v) return 0; //check if the color is the same as the old then nothing to do
         ArrayList<Pixel2D> todoList = new java.util.ArrayList<>(); //create a todolist &counter
         todoList.add(xy);
@@ -235,17 +240,94 @@ public class Map implements Map2D, Serializable{
         }
         return count;
 	}
-
 	@Override
 	/**
 	 * BFS like shortest the computation based on iterative raster implementation of BFS, see:
 	 * https://en.wikipedia.org/wiki/Breadth-first_search
 	 */
 	public Pixel2D[] shortestPath(Pixel2D p1, Pixel2D p2, int obsColor, boolean cyclic) {
-		Pixel2D[] ans = null;  // the result.
+        // 0. בדיקות מקדימות: אם ההתחלה או הסוף הם קירות - אין מסלול
+        if (getPixel(p1) == obsColor || getPixel(p2) == obsColor) return null;
+        int w = getWidth();
+        int h = getHeight();
 
-		return ans;
-	}
+        // מערך עזר לשמירת המרחקים מ-p1. מאתחלים ב-1- (לא ביקרנו)
+        int[][] distances = new int[w][h]; //instead of t/f we keep in array and each index is a neighbor
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+                distances[i][j] = -1; //we didn't make it yet
+            }
+        }
+
+        // --- שלב 1: BFS (התפשטות הגל) ---
+        java.util.ArrayList<Pixel2D> queue = new java.util.ArrayList<>();
+
+        // התחלה ב-p1
+        distances[p1.getX()][p1.getY()] = 0;
+        queue.add(p1);
+
+        int[] dx = {1, -1, 0, 0}; // וקטורי תנועה (ימין, שמאל, למטה, למעלה)
+        int[] dy = {0, 0, 1, -1};
+
+        boolean found = false;
+
+        while (!queue.isEmpty()) {
+            Pixel2D current = queue.remove(0); // שליפה מהראש (FIFO)
+            if (current.equals(p2)) { // הגענו ליעד!
+                found = true;
+                break;
+            }
+            // מעבר על 4 השכנים
+            for (int i = 0; i < 4; i++) {
+                int nextX = current.getX() + dx[i];
+                int nextY = current.getY() + dy[i];
+
+                // טיפול במצב Cyclic (עולם עגול)
+                if (cyclic) {
+                    nextX = (nextX + w) % w;
+                    nextY = (nextY + h) % h;
+                }
+
+                // יצירת הנקודה השכנה (נניח ש-Index2D הוא המימוש שלך ל-Pixel2D)
+                Pixel2D neighbor = new Index2D(nextX, nextY);
+
+                // התנאים לכניסה: הנקודה בתוך המפה, היא לא מכשול, ועוד לא ביקרנו בה
+                if (isInside(neighbor) && getPixel(neighbor) != obsColor && distances[nextX][nextY] == -1) {
+                    distances[nextX][nextY] = distances[current.getX()][current.getY()] + 1;
+                    queue.add(neighbor); // הוספה לתור להמשך סריקה
+                }
+            }
+        }
+        // אם סיימנו את הלולאה ולא מצאנו את היעד - אין דרך
+        if (!found) return null;
+        // --- שלב 2: Backtracking (שחזור המסלול מהסוף להתחלה) ---
+        int distance = distances[p2.getX()][p2.getY()];
+        Pixel2D[] path = new Pixel2D[distance + 1]; // גודל המסלול הוא המרחק + 1 (כולל ההתחלה)
+
+        Pixel2D current = p2;
+        path[distance] = current; // שמים את הסוף בתא האחרון
+        // לולאה שיורדת מהמרחק המקסימלי עד 0
+        for (int d = distance - 1; d >= 0; d--) {
+            // מחפשים שכן שהמרחק שלו הוא בדיוק d
+            for (int i = 0; i < 4; i++) {
+                int prevX = current.getX() + dx[i];
+                int prevY = current.getY() + dy[i];
+
+                if (cyclic) {
+                    prevX = (prevX + w) % w;
+                    prevY = (prevY + h) % h;
+                }
+
+                // אם השכן חוקי והמרחק שלו הוא הצעד הקודם שחיפשנו
+                if (isInside(new Index2D(prevX, prevY)) && distances[prevX][prevY] == d) {
+                    current = new Index2D(prevX, prevY);
+                    path[d] = current; // רושמים אותו במסלול
+                    break; // מצאנו את הצעד הזה, אפשר לעבור לצעד הבא
+                }
+            }
+        }
+        return path;
+    }
     @Override
     public Map2D allDistance(Pixel2D start, int obsColor, boolean cyclic) {
         Map2D ans = null;  // the result.

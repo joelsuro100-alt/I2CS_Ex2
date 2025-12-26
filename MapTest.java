@@ -50,6 +50,87 @@ class MapTest {
     }
 
 
+    @Test
+    void testInit1() {
+    }
 
+    @Test
+    void testInit2() {
+    }
 
+    @Test
+    void getMap() {
+    }
+
+    @Test
+    void getWidth() {
+    }
+
+    @Test
+    void getHeight() {
+    }
+
+    @Test
+    void getPixel() {
+    }
+
+    @Test
+    void testGetPixel() {
+    }
+
+    @Test
+    void setPixel() {
+    }
+
+    @Test
+    void testSetPixel() {
+    }
+
+    @Test
+    void isInside() {
+    }
+
+    @Test
+    void sameDimensions() {
+    }
+
+    @Test
+    void addMap2D() {
+    }
+
+    @Test
+    void mul() {
+    }
+
+    @Test
+    void rescale() {
+    }
+
+    @Test
+    void drawCircle() {
+    }
+
+    @Test
+    void drawLine() {
+    }
+
+    @Test
+    void drawRect() {
+    }
+
+    @Test
+    void testEquals1() {
+    }
+
+    @Test
+    void fill() {
+    }
+
+    @Test
+    void shortestPath() {
+    }
+
+    @Test
+    void allDistance() {
+    }
 }
