@@ -42,7 +42,6 @@ public class Ex2_GUI {
     public static Map2D loadMap(String mapFileName) {
         try {
             java.util.Scanner scanner = new java.util.Scanner(new java.io.File(mapFileName)); //open the file
-
             // Read first line: width and height
             int w = scanner.nextInt(); //get width
             int h = scanner.nextInt(); //get height
@@ -110,7 +109,7 @@ public class Ex2_GUI {
         } else {
             System.out.println("Could not load map from " + mapFile + ", creating a test map instead");
 
-            // Second part: my own test map - good for checking all drawing functions
+            //my own test map checking all drawing functions
             Map2D map = new Map(20, 20, 0); //create small white map 20x20
             map.setPixel(0, 0, 1); //black pixel at corner
             map.drawRect(new Index2D(5, 5), new Index2D(15, 6), 1); //black wall in middle
@@ -118,6 +117,8 @@ public class Ex2_GUI {
             map.drawLine(new Index2D(0, 19), new Index2D(19, 0), 3); //red diagonal line
             map.fill(new Index2D(10, 15), 5, false); //fill circle with yellow
             drawMap(map); //show my test map
+
+            saveMap(map, mapFile);
         }
     }
     /// ///////////// Private functions ///////////////

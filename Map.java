@@ -10,7 +10,6 @@ import java.util.ArrayList;
  *
  */
 public class Map implements Map2D, Serializable{
-    //TODO
 	/**
 	 * Constructs a w*h 2D raster map with an init value v.
 	 * @param w

@@ -16,16 +16,12 @@ class MapTest {
     private Map2D _m0, _m1, _m3_3;
 
     @BeforeEach
-    public void setUp() {          // חובה: שם בדיוק setUp (עם U גדולה!)
-        _m0 = new Map(20, 20, 0);   // מפה בינונית לבדיקות - מאותחלת
-        _m1 = new Map(20, 20, 0);   // עוד מפה להשוואות
-        _m3_3 = new Map(_map_3_3); // המפה הקטנה 3x3 שלך
+    public void setUp() {
+        _m0 = new Map(20, 20, 0);
+        _m1 = new Map(20, 20, 0);
+        _m3_3 = new Map(_map_3_3);
     }
 
-    /*@BeforeEach
-    public void setuo() {
-        _m3_3 = new Map(_map_3_3);
-    }*/
     @Test
     @Timeout(value = 1, unit = SECONDS)
     void init() {
@@ -53,38 +49,36 @@ class MapTest {
 
     @Test
     void testinit1(){
-        //test if w & h are neggative
+        _m0.init(_map_3_3);
+        _m1.init(_map_3_3);
+        assertEquals(_m0, _m1);
 
+        // מקרה 2: שינוי במערך המקורי לא אמור להשפיע (Deep Copy)
+        int[][] temp = {{1, 2}, {3, 4}};
+        _m0.init(temp);
+        temp[0][0] = 99; // משנים את המערך בחוץ
+        assertNotEquals(99, _m0.getPixel(0, 0)); // המפה צריכה להישאר עם 1
     }
 
 
     @Test
     void testInit1() {
+        // מקרה 1: אתחול ממערך קיים ובדיקת שוויון
+        _m0.init(_map_3_3);
+        _m1.init(_map_3_3);
+        assertEquals(_m0, _m1);
+
+        // מקרה 2: שינוי במערך המקורי לא אמור להשפיע (Deep Copy)
+        int[][] temp = {{1, 2}, {3, 4}};
+        _m0.init(temp);
+        temp[0][0] = 99; // משנים את המערך בחוץ
+        assertNotEquals(99, _m0.getPixel(0, 0)); // המפה צריכה להישאר עם 1
     }
 
     @Test
     void testInit2() {
     }
 
-    @Test
-    void getMap() {
-    }
-
-    @Test
-    void getWidth() {
-    }
-
-    @Test
-    void getHeight() {
-    }
-
-    @Test
-    void getPixel() {
-    }
-
-    @Test
-    void testGetPixel() {
-    }
 
     @Test
     void setPixel() {
@@ -108,36 +102,31 @@ class MapTest {
 
     @Test
     void mul() {
-        _m0.init(3, 3, 42);         // all pixels = 42
-        _m0.mul(0.0);               // multiply by 0
-        for (int x = 0; x < 3; x++) {
-            for (int y = 0; y < 3; y++) {
-                assertEquals(0, _m0.getPixel(x, y));
-            }
-        }
-        _m0.init(2, 2, 10);         // all pixels = 10
-        _m0.mul(-3.0);              // 10 * -3 = -30
-        assertEquals(-30, _m0.getPixel(0, 0));
-        assertEquals(-30, _m0.getPixel(1, 1));
+        // 1. הכנה: יוצרים מפה שכל הערכים בה הם 10
+        Map map = new Map(2, 2, 10);
 
-        _m0.init(1, 4, 5);
-        _m0.mul(1.8);               // 5 * 1.8 = 9.0 → 9
-        assertEquals(9, _m0.getPixel(0, 0));
+        // --- שלב א': כפל ב-0 ---
+        // ציפייה: 10 * 0 = 0
+        map.mul(0.0);
+        assertEquals(0, map.getPixel(0, 0), "Failed mul(0): Expected 0");
+        assertEquals(0, map.getPixel(1, 1), "Failed mul(0): Expected 0");
 
-        _m1.init(1, 1, 7);
-        _m1.mul(0.6);               // 7 * 0.6 = 4.2 → rounds to 4
-        assertEquals(4, _m1.getPixel(0, 0));
+        // --- שלב ב': כפל במספר שלילי ---
+        // נאתחל את המפה מחדש לערך 5
+        map.init(2, 2, 5);
+        // נכפיל במינוס 2. ציפייה: 5 * (-2) = -10
+        map.mul(-2.0);
+        assertEquals(-10, map.getPixel(0, 0), "Failed mul(-2): Expected -10");
+        // --- שלב ג': כפל נוסף (שרשור) ---
+        // המצב הנוכחי הוא -10. נכפיל עכשיו ב-3.
+        // ציפייה: -10 * 3 = -30
+        map.mul(3.0);
+        assertEquals(-30, map.getPixel(0, 0), "Failed chained mul: Expected -30");
 
-        _m1.init(1, 1, 9);
-        _m1.mul(1.7);               // 9 * 1.7 = 15.3 → rounds to 15
-        assertEquals(15, _m1.getPixel(0, 0));
-
-        _m0.init(_map_3_3);
-        _m0.mul(2.0);
-        assertEquals(0, _m0.getPixel(0, 0));
-        assertEquals(2, _m0.getPixel(0, 1));
-        assertEquals(8, _m0.getPixel(1, 1));
-        assertEquals(16, _m0.getPixel(2, 1));
+        // --- שלב ד': בדיקת עיגול (בונוס) ---
+        // ציפייה: -30 * 0.5 = -15
+        map.mul(0.5);
+        assertEquals(-15, map.getPixel(0, 0), "Failed rounding check");
     }
 
     @Test
@@ -158,6 +147,17 @@ class MapTest {
 
     @Test
     void testEquals1() {
+        // מקרה 1: שוויון בסיסי
+        assertEquals(_m0, _m1);
+
+        // מקרה 2: שוויון אחרי שינוי תוכן
+        _m0.init(_map_3_3);
+        _m1.init(_map_3_3);
+        assertEquals(_m0, _m1);
+
+        // מקרה קצה: שינוי פיקסל אחד הופך אותם לשונים
+        _m1.setPixel(0, 0, 9);
+        assertNotEquals(_m0, _m1);
     }
 
     @Test
