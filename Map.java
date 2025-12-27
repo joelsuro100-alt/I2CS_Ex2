@@ -11,7 +11,6 @@ import java.util.ArrayList;
  */
 public class Map implements Map2D, Serializable{
     //TODO
-
 	/**
 	 * Constructs a w*h 2D raster map with an init value v.
 	 * @param w
@@ -120,14 +119,43 @@ public class Map implements Map2D, Serializable{
     }
     @Override
     public void mul(double scalar) {
+        int w = getWidth(); //get map width
+        int h = getHeight(); //get map height
 
+        for (int x = 0; x < w; x++) { //go over every column
+            for (int y = 0; y < h; y++) { //go over every row
+                int oldValue = getPixel(x, y); //get current value
+                double newDouble = oldValue * scalar; //multiply by scalar
+                int newValue = (int) Math.round(newDouble); //round to nearest int
+                setPixel(x, y, newValue); //save back to map
+            }
+        }
     }
-
     @Override
     public void rescale(double sx, double sy) {
+        int oldW = getWidth(); //original width
+        int oldH = getHeight(); //original height
 
+        int newW = (int) Math.round(oldW * sx); //calculate new x dimensions & round to nearest int
+        int newH = (int) Math.round(oldH * sy); //calculate new y dimensions & round to nearest int
+        if (newW == oldW && newH == oldH) { //if size didn't change do nothing
+            return;
+        }
+        int[][] newMap = new int[newW][newH]; //create a new array with the new size
+        for (int x = 0; x < newW; x++) { //go over every pixel in the new map and check that its inside borders and which pixel this corresponds to
+            for (int y = 0; y < newH; y++) {
+                double oldX = x / sx;  // reverse scaling
+                double oldY = y / sy;
+                int srcX = (int) Math.round(oldX); //take the nearest pixel and round to int
+                int srcY = (int) Math.round(oldY);
+
+                srcX = Math.max(0, Math.min(srcX, oldW - 1));//make sure it's inside the old map bounds
+                srcY = Math.max(0, Math.min(srcY, oldH - 1));
+                newMap[x][y] = _map[srcX][srcY]; //copy the value from old map
+            }
+        }
+        this._map = newMap; //replace the old map with the new one
     }
-
     @Override
     public void drawCircle(Pixel2D center, double rad, int color) {
         int centerX = center.getX(); //take the center point x&y value
@@ -246,94 +274,105 @@ public class Map implements Map2D, Serializable{
 	 * https://en.wikipedia.org/wiki/Breadth-first_search
 	 */
 	public Pixel2D[] shortestPath(Pixel2D p1, Pixel2D p2, int obsColor, boolean cyclic) {
-        // 0. בדיקות מקדימות: אם ההתחלה או הסוף הם קירות - אין מסלול
-        if (getPixel(p1) == obsColor || getPixel(p2) == obsColor) return null;
+        if (getPixel(p1) == obsColor || getPixel(p2) == obsColor) return null; //check if the end or begging are the walls
         int w = getWidth();
         int h = getHeight();
 
-        // מערך עזר לשמירת המרחקים מ-p1. מאתחלים ב-1- (לא ביקרנו)
-        int[][] distances = new int[w][h]; //instead of t/f we keep in array and each index is a neighbor
-        for (int i = 0; i < w; i++) {
-            for (int j = 0; j < h; j++) {
-                distances[i][j] = -1; //we didn't make it yet
+        int[][] dist = new int[w][h]; //Distance array
+        for (int x = 0; x < w; x++) {
+            for (int y = 0; y < h; y++) {
+                dist[x][y] = -1;  // mark all as not visited
             }
         }
-
-        // --- שלב 1: BFS (התפשטות הגל) ---
-        java.util.ArrayList<Pixel2D> queue = new java.util.ArrayList<>();
-
-        // התחלה ב-p1
-        distances[p1.getX()][p1.getY()] = 0;
-        queue.add(p1);
-
-        int[] dx = {1, -1, 0, 0}; // וקטורי תנועה (ימין, שמאל, למטה, למעלה)
+        Pixel2D[][] parent = new Pixel2D[w][h]; //array to remember from which pixel we came to each pixel
+        int[] dx = {1, -1, 0, 0}; //possible moves 4 ways-right, left, down, up
         int[] dy = {0, 0, 1, -1};
 
-        boolean found = false;
-
-        while (!queue.isEmpty()) {
-            Pixel2D current = queue.remove(0); // שליפה מהראש (FIFO)
-            if (current.equals(p2)) { // הגענו ליעד!
-                found = true;
-                break;
+        ArrayList<Pixel2D> queue = new ArrayList<>(); //queue for BFS
+        queue.add(p1);                                //add starting point
+        dist[p1.getX()][p1.getY()] = 0;                //distance 0 at start
+        parent[p1.getX()][p1.getY()] = null;           //no parent for start
+        while (!queue.isEmpty()) { //main BTS loop
+            Pixel2D curr = queue.remove(0);  // take the first pixel in queue (FIFO System)
+            if (curr.equals(p2)) { //if we reached the end rebuild and return the path
+                return reconstructPath(parent, p1, p2);
             }
-            // מעבר על 4 השכנים
-            for (int i = 0; i < 4; i++) {
-                int nextX = current.getX() + dx[i];
-                int nextY = current.getY() + dy[i];
+            for (int i = 0; i < 4; i++) { //check all 4 neighbors
+                int nx = curr.getX() + dx[i];
+                int ny = curr.getY() + dy[i];
 
-                // טיפול במצב Cyclic (עולם עגול)
-                if (cyclic) {
-                    nextX = (nextX + w) % w;
-                    nextY = (nextY + h) % h;
+                if (cyclic) {  //handle cyclic world - wrap around edges
+                    nx = (nx + w) % w;
+                    ny = (ny + h) % h;
                 }
-
-                // יצירת הנקודה השכנה (נניח ש-Index2D הוא המימוש שלך ל-Pixel2D)
-                Pixel2D neighbor = new Index2D(nextX, nextY);
-
-                // התנאים לכניסה: הנקודה בתוך המפה, היא לא מכשול, ועוד לא ביקרנו בה
-                if (isInside(neighbor) && getPixel(neighbor) != obsColor && distances[nextX][nextY] == -1) {
-                    distances[nextX][nextY] = distances[current.getX()][current.getY()] + 1;
-                    queue.add(neighbor); // הוספה לתור להמשך סריקה
+                if (!cyclic && (nx < 0 || nx >= w || ny < 0 || ny >= h)) { //if not cyclic, check if neighbor are inside the map
+                    continue;  //if they are inside then continue
                 }
-            }
-        }
-        // אם סיימנו את הלולאה ולא מצאנו את היעד - אין דרך
-        if (!found) return null;
-        // --- שלב 2: Backtracking (שחזור המסלול מהסוף להתחלה) ---
-        int distance = distances[p2.getX()][p2.getY()];
-        Pixel2D[] path = new Pixel2D[distance + 1]; // גודל המסלול הוא המרחק + 1 (כולל ההתחלה)
+                Pixel2D neighbor = new Index2D(nx, ny);
 
-        Pixel2D current = p2;
-        path[distance] = current; // שמים את הסוף בתא האחרון
-        // לולאה שיורדת מהמרחק המקסימלי עד 0
-        for (int d = distance - 1; d >= 0; d--) {
-            // מחפשים שכן שהמרחק שלו הוא בדיוק d
-            for (int i = 0; i < 4; i++) {
-                int prevX = current.getX() + dx[i];
-                int prevY = current.getY() + dy[i];
-
-                if (cyclic) {
-                    prevX = (prevX + w) % w;
-                    prevY = (prevY + h) % h;
-                }
-
-                // אם השכן חוקי והמרחק שלו הוא הצעד הקודם שחיפשנו
-                if (isInside(new Index2D(prevX, prevY)) && distances[prevX][prevY] == d) {
-                    current = new Index2D(prevX, prevY);
-                    path[d] = current; // רושמים אותו במסלול
-                    break; // מצאנו את הצעד הזה, אפשר לעבור לצעד הבא
+                if (getPixel(neighbor) != obsColor && dist[nx][ny] == -1) { //only enter if it's not an obstacle and we haven't been here before
+                    dist[nx][ny] = dist[curr.getX()][curr.getY()] + 1;  // one step further
+                    parent[nx][ny] = curr;                              // remember who brought us here
+                    queue.add(neighbor);                                // add to queue for later exploration
                 }
             }
         }
-        return path;
+        return null; //finish the loop without finding the end then there is no path
     }
     @Override
     public Map2D allDistance(Pixel2D start, int obsColor, boolean cyclic) {
-        Map2D ans = null;  // the result.
+        int w = getWidth(); //get width
+        int h = getHeight(); //get height
+        Map2D distMap = new Map(w, h, -1); //create a new map for the distances where all pixels start with -1=unreachable
 
-        return ans;
+        if (getPixel(start) == obsColor) { //if start is obstacle do nothing
+            return distMap; //return all -1
+        }
+        int[] dx = {1, -1, 0, 0}; //4 moves-right, left, down, up
+        int[] dy = {0, 0, 1, -1};
+
+        ArrayList<Pixel2D> queue = new ArrayList<>(); //BFS queue like shortestpath
+        queue.add(start); //start from the source
+        distMap.setPixel(start, 0); //distance 0 at start
+
+        while (!queue.isEmpty()) { //same BFS as shortestPath
+            Pixel2D curr = queue.remove(0); //take first in queue
+            for (int i = 0; i < 4; i++) { //check 4 neighbors
+                int nx = curr.getX() + dx[i];
+                int ny = curr.getY() + dy[i];
+                if (cyclic) { //wrap around if cyclic
+                    nx = (nx + w) % w;
+                    ny = (ny + h) % h;
+                }
+                if (!cyclic && (nx < 0 || nx >= w || ny < 0 || ny >= h)) { //check out of bounds
+                    continue; //skip
+                }
+                Pixel2D neighbor = new Index2D(nx, ny);
+                if (getPixel(neighbor) != obsColor && distMap.getPixel(neighbor) == -1) { //only go to free pixels that we haven't visited yet
+                    int newDist = distMap.getPixel(curr) + 1; //one more than parent
+                    distMap.setPixel(neighbor, newDist); //save distance
+                    queue.add(neighbor); //add to queue
+                }
+            }
+        }
+
+        return distMap; //return the full distance map
     }
 	////////////////////// Private Methods ///////////////////////
-
+    /**
+     * Helper function for shortestPath -switches the path by going backwards from end to start using parents
+     */
+    private Pixel2D[] reconstructPath(Pixel2D[][] parent, Pixel2D start, Pixel2D end) {
+        ArrayList<Pixel2D> path = new ArrayList<>();
+        Pixel2D current = end;
+        while (current != null) { //set the path backwards -end to start
+            path.add(current); //add current pixel
+            current = parent[current.getX()][current.getY()]; //go to parent
+        }
+        Pixel2D[] correctPath = new Pixel2D[path.size()];  //Create a new array for the correct order
+        for (int i = 0; i < path.size(); i++) { //Copy elements from the end of the list to the beginning of the array
+            correctPath[i] = path.get(path.size() - 1 - i); //for i0 last element= start, i1= last-1-index
+        }
+        return correctPath;
+    }
 }
