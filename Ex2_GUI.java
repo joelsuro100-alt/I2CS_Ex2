@@ -46,7 +46,6 @@ public class Ex2_GUI {
             int w = scanner.nextInt(); //get width
             int h = scanner.nextInt(); //get height
             scanner.nextLine(); //go to next line after numbers
-
             // Create new map with white background (0)
             Map2D map = new Map(w, h, 0);
 
@@ -67,7 +66,6 @@ public class Ex2_GUI {
             return null; //return null if failed
         }
     }
-
     /**
      *
      * @param map
@@ -79,9 +77,7 @@ public class Ex2_GUI {
 
             int w = map.getWidth(); //get width
             int h = map.getHeight(); //get height
-
-            // First line: width height
-            writer.println(w + " " + h);
+            writer.println(w + " " + h); //first line- width + height
 
             // Write all rows, from top to bottom
             for (int y = h - 1; y >= 0; y--) { //start from top row
@@ -95,11 +91,10 @@ public class Ex2_GUI {
             }
             writer.close(); //close the file
             System.out.println("Map saved successfully to " + mapFileName);
-        } catch (Exception e) { //if cannot write to file
+        } catch (Exception e) { //if you cannot write to file
             System.err.println("Error saving map to " + mapFileName + ": " + e.getMessage());
         }
     }
-
     public static void main(String[] a) {
         String mapFile = "map.txt"; //the file name
         Map2D mapFromFile = loadMap(mapFile); //try to load the map
@@ -109,16 +104,28 @@ public class Ex2_GUI {
         } else {
             System.out.println("Could not load map from " + mapFile + ", creating a test map instead");
 
-            //my own test map checking all drawing functions
-            Map2D map = new Map(20, 20, 0); //create small white map 20x20
-            map.setPixel(0, 0, 1); //black pixel at corner
-            map.drawRect(new Index2D(5, 5), new Index2D(15, 6), 1); //black wall in middle
-            map.drawCircle(new Index2D(10, 15), 3, 4); //green circle
-            map.drawLine(new Index2D(0, 19), new Index2D(19, 0), 3); //red diagonal line
-            map.fill(new Index2D(10, 15), 5, false); //fill circle with yellow
-            drawMap(map); //show my test map
+            Map2D map = new Map(60, 60, 0); //white map 60x60
+            map.drawRect(new Index2D(27, 12), new Index2D(33, 48), 1); //black rectangle obstacle middle
 
-            saveMap(map, mapFile);
+            Pixel2D start = new Index2D(6, 30);
+            Pixel2D end = new Index2D(51, 30);
+            Pixel2D[] path = map.shortestPath(start, end, 1, false); //calc the shortestPath
+
+            if (path != null) {
+                System.out.println("Path found! Length: " + path.length);
+                for (Pixel2D p : path) {
+                    map.setPixel(p, 4); //line color green
+                }
+            } else {
+                System.out.println("No path found!");
+            }
+            map.setPixel(start, 2); //pixel start and finish blue
+            map.setPixel(end, 2);
+            map.drawRect(new Index2D(51, 0), new Index2D(57, 6), 3); //red rectangle bottom right
+            map.drawCircle(new Index2D(9, 9), 6, 5); //yellow circle bottom left
+
+            saveMap(map, mapFile); //save the map for next runtime
+            drawMap(map); //draw the map that we made
         }
     }
     /// ///////////// Private functions ///////////////

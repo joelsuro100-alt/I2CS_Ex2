@@ -236,7 +236,7 @@ public class Map implements Map2D, Serializable{
 	@Override
 	/** 
 	 * Fills this map with the new color (new_v) starting from p.
-     * I asked chatgpt to help me write fill with an arraylist, and it suggested with Uses of BFS/DFS iterative approach.
+     * I asked chatgpt to help me write fill with an arraylist, and it assisted me with Uses of queue approach.
 	 * https://en.wikipedia.org/wiki/Flood_fill
 	 */
 	public int fill(Pixel2D xy, int new_v,  boolean cyclic) {
@@ -280,7 +280,7 @@ public class Map implements Map2D, Serializable{
         int[][] dist = new int[w][h]; //Distance array
         for (int x = 0; x < w; x++) {
             for (int y = 0; y < h; y++) {
-                dist[x][y] = -1;  // mark all as not visited
+                dist[x][y] = -1;  //mark all as not visited
             }
         }
         Pixel2D[][] parent = new Pixel2D[w][h]; //array to remember from which pixel we came to each pixel
@@ -292,7 +292,7 @@ public class Map implements Map2D, Serializable{
         dist[p1.getX()][p1.getY()] = 0;                //distance 0 at start
         parent[p1.getX()][p1.getY()] = null;           //no parent for start
         while (!queue.isEmpty()) { //main BTS loop
-            Pixel2D curr = queue.remove(0);  // take the first pixel in queue (FIFO System)
+            Pixel2D curr = queue.remove(0);  //take the first pixel in queue (FIFO System)
             if (curr.equals(p2)) { //if we reached the end rebuild and return the path
                 return reconstructPath(parent, p1, p2);
             }
